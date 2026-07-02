@@ -88,7 +88,9 @@ export function ChatWindow({
   }
 
   return (
-    <div className="flex h-[calc(100dvh-8rem)] flex-col lg:h-[calc(100dvh-6rem)]">
+    // Mobile height accounts for the sticky top bar + fixed bottom tab bar;
+    // desktop has neither, so it only reserves space for the page padding.
+    <div className="flex h-[calc(100dvh-12rem)] flex-col lg:h-[calc(100dvh-6rem)]">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Ask AI</h1>

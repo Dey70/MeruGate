@@ -22,7 +22,7 @@ export function TopicChecklistItem({
   return (
     <div
       className={cn(
-        "group flex items-center gap-3 rounded-glass-sm px-3 py-2.5 transition-colors hover:bg-white/50",
+        "flex items-center gap-3 rounded-glass-sm px-3 py-2.5 transition-colors hover:bg-white/50",
         isPending && "opacity-60"
       )}
     >
@@ -47,7 +47,7 @@ export function TopicChecklistItem({
       <Link
         href={`/planner/${topicId}`}
         aria-label={`Open notes for "${title}"`}
-        className="text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
+        className="text-muted-foreground/60 transition-colors hover:text-foreground"
       >
         <NotebookPen className="size-4" />
       </Link>

@@ -155,6 +155,10 @@
     @apply text-foreground bg-warm-gradient;
     background-attachment: fixed;
     min-height: 100dvh;
+    /* Safety net: nothing should intentionally cause horizontal scroll, but
+       one overlooked long string on a narrow phone shouldn't turn into a
+       sideways-scrolling page either. */
+    overflow-x: hidden;
   }
 }
 

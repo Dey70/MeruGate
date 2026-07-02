@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Sidebar } from "@/components/layout/sidebar";
 import { MobileNav } from "@/components/layout/mobile-nav";
+import { BottomTabBar } from "@/components/layout/bottom-tab-bar";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -22,10 +23,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <Sidebar />
       <div className="flex flex-1 flex-col lg:pl-28">
         <MobileNav />
-        <main className="flex-1 px-4 py-6 lg:px-8 lg:py-10">
+        {/* pb-24 clears the fixed BottomTabBar; lg:py-10 removes it where the bar isn't shown. */}
+        <main className="flex-1 px-4 pt-6 pb-24 lg:px-8 lg:py-10">
           <div className="mx-auto w-full max-w-6xl">{children}</div>
         </main>
       </div>
+      <BottomTabBar />
     </div>
   );
 }

@@ -2,28 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  ListChecks,
-  Users,
-  NotebookPen,
-  Target,
-  MessageCircle,
-  LogOut,
-} from "lucide-react";
+import { LogOut } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { signOutAction } from "@/lib/actions/auth";
-
-const NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/planner", label: "Planner", icon: ListChecks },
-  { href: "/squad", label: "Squad", icon: Users },
-  { href: "/notes", label: "Notes", icon: NotebookPen },
-  { href: "/goals", label: "Goals", icon: Target },
-  { href: "/chat", label: "Ask AI", icon: MessageCircle },
-];
+import { NAV_ITEMS } from "@/lib/nav-items";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -54,7 +38,7 @@ export function Sidebar() {
                         : "text-muted-foreground hover:bg-white/60 hover:text-foreground"
                     )}
                   >
-                    <item.icon className="size-[18px]" />
+                    <item.icon className="size-4.5" />
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent side="right">{item.label}</TooltipContent>
@@ -71,7 +55,7 @@ export function Sidebar() {
                 aria-label="Sign out"
                 className="flex size-10 items-center justify-center rounded-glass-sm text-muted-foreground transition-all duration-200 hover:bg-white/60 hover:text-foreground"
               >
-                <LogOut className="size-[18px]" />
+                <LogOut className="size-4.5" />
               </button>
             </TooltipTrigger>
             <TooltipContent side="right">Sign out</TooltipContent>

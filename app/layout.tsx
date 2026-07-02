@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
@@ -12,6 +12,14 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "MeeruGate",
   description: "Study tracker for GATE CSE exam prep with social accountability.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  // Lets fixed elements (bottom tab bar) sit under the iPhone notch/home
+  // indicator so we can pad around them with env(safe-area-inset-*).
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

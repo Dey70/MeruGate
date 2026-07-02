@@ -63,20 +63,22 @@ export default async function PlannerPage() {
           return (
             <GlassCard key={month} className="p-0" strong>
               <details open={month === firstIncompleteMonth} className="group">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5">
-                  <div>
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 sm:gap-4 sm:px-6 sm:py-5">
+                  <div className="min-w-0 flex-1">
                     <h2 className="font-semibold">Month {month}</h2>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{subjects.join(" · ")}</p>
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                      {subjects.join(" · ")}
+                    </p>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex shrink-0 items-center gap-3">
                     <span className="text-sm text-muted-foreground">
                       {monthCompleted}/{monthTopics.length}
                     </span>
-                    <Progress value={monthProgress} className="w-24" />
+                    <Progress value={monthProgress} className="hidden w-24 sm:block" />
                   </div>
                 </summary>
 
-                <div className="flex flex-col gap-4 border-t border-white/40 px-6 pb-6 pt-4">
+                <div className="flex flex-col gap-4 border-t border-white/40 px-4 pb-6 pt-4 sm:px-6">
                   {weeks.map(({ weekNumber, topics: weekTopics }) => (
                     <div key={weekNumber}>
                       <h3 className="mb-1 px-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
