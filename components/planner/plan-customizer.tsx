@@ -13,6 +13,12 @@ import type { PreviewScheduleEntry } from "@/lib/validation/planner-customize";
 
 export function PlanCustomizer() {
   const [prompt, setPrompt] = useState("");
+  // Refinement doesn't send the previous schedule back as data (a full
+  // ~176-entry schedule alongside the ~176-topic context routinely blew
+  // Groq's per-minute token budget) — instead each follow-up instruction is
+  // appended here and the whole thing is sent as one combined text prompt,
+  // regenerated fresh each time.
+  const [instructions, setInstructions] = useState<string[]>([]);
   const [preview, setPreview] = useState<PreviewScheduleEntry[] | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -26,18 +32,20 @@ export function PlanCustomizer() {
     setIsGenerating(true);
     setError(null);
 
+    const nextInstructions = [...instructions, text];
+    const combinedPrompt =
+      nextInstructions.length === 1
+        ? nextInstructions[0]
+        : `${nextInstructions[0]}\n\n${nextInstructions
+            .slice(1)
+            .map((instruction) => `Additional refinement: ${instruction}`)
+            .join("\n\n")}`;
+
     try {
       const response = await fetch("/api/planner/customize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: text,
-          previousSchedule: preview?.map((entry) => ({
-            topicId: entry.topicId,
-            month: entry.month,
-            weekNumber: entry.weekNumber,
-          })),
-        }),
+        body: JSON.stringify({ prompt: combinedPrompt }),
       });
 
       const data = await response.json();
@@ -47,6 +55,7 @@ export function PlanCustomizer() {
         return;
       }
 
+      setInstructions(nextInstructions);
       setPreview(data.schedule);
       setNote(data.note ?? null);
       setPrompt("");

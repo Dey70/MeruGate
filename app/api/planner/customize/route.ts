@@ -11,11 +11,13 @@ import {
 
 const SYSTEM_PROMPT = `You build a personalized month/week study schedule for a GATE CSE student.
 
-You are given the full list of available topics as JSON, each with an "id", "subject", "title", and its default "defaultMonth"/"defaultWeek". You must ONLY use topics from this list, referenced by their exact "id" string — never invent a topic, a title, or an id that isn't in the list. If the student's request implies skipping a subject or topic, simply omit those topics from your output; you don't need to explain the omission.
+You are given the full list of available topics as JSON, each shortened to keys "i" (index), "s" (subject), "t" (title). You must ONLY use topics from this list, referenced by their exact "i" number — never invent a topic, a title, or an index that isn't in the list.
 
-Respond with JSON matching this shape: { "note": "one or two sentences summarizing what you did, e.g. which subjects you compressed, skipped, or emphasized", "schedule": [ { "topicId": "<id from the list>", "month": <integer, 1-based>, "weekNumber": <integer, 1-based, resets each new month, e.g. weeks 1-4 within month 1, weeks 1-4 within month 2, ...> } ] }.
+COMPLETENESS IS MANDATORY: every single topic belonging to a subject the student is keeping must appear in your output. Do not sample a handful of "highlights" from a subject — if you keep a subject, include ALL of its topics from the list, each assigned to some month/week. Only omit a topic if the student explicitly asked to skip that subject or topic entirely, or explicitly asked to drop specific topics. A schedule that only includes a fraction of the topics from a kept subject is wrong. Weeks in the source list typically hold 3-5 topics each — match that density; do not compress a subject down to one topic per week unless the student asked for a much shorter timeline than the subject needs.
 
-Group topics sensibly — keep related topics from the same subject together within a week or a short run of weeks rather than scattering them randomly. Respect explicit constraints in the student's request (total number of months, subjects to skip or emphasize, pacing). If they're refining a previous draft, treat their new instruction as a change to make to that draft, not a request to start over from nothing.`;
+Respond with JSON matching this shape: { "note": "one or two sentences summarizing what you did", "schedule": [ { "i": <integer index from the list>, "m": <integer month, 1-based>, "w": <integer week, 1-based, resets each new month> } ] }. The schedule array must contain one entry per topic you are keeping — for a student keeping most subjects, that means most of the ~176 available topics.
+
+Group topics sensibly — keep related topics from the same subject together within a week or a short run of weeks rather than scattering them randomly. The student's request may contain multiple instructions accumulated over a conversation (an original request plus follow-up refinements) — satisfy ALL of them together as one coherent final plan. Be economical in your reasoning, but the schedule array itself must be complete — do not truncate or sample it.`;
 
 const SCHEDULE_JSON_SCHEMA = {
   type: "object",
@@ -26,11 +28,11 @@ const SCHEDULE_JSON_SCHEMA = {
       items: {
         type: "object",
         properties: {
-          topicId: { type: "string" },
-          month: { type: "integer" },
-          weekNumber: { type: "integer" },
+          i: { type: "integer" },
+          m: { type: "integer" },
+          w: { type: "integer" },
         },
-        required: ["topicId", "month", "weekNumber"],
+        required: ["i", "m", "w"],
         additionalProperties: false,
       },
     },
@@ -38,6 +40,12 @@ const SCHEDULE_JSON_SCHEMA = {
   required: ["schedule"],
   additionalProperties: false,
 };
+
+// Empirically tuned against Groq's 8000 tokens/minute limit for
+// openai/gpt-oss-120b: 176 topics as {i,s,t} context is ~4000 prompt
+// tokens; this leaves room for the model's own (variable, low-effort)
+// reasoning plus a full ~176-entry response without hitting the ceiling.
+const MAX_COMPLETION_TOKENS = 3900;
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -56,29 +64,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const { prompt, previousSchedule } = parsed.data;
+  const { prompt } = parsed.data;
 
   const topics = await getAllTopics();
-  const topicById = new Map(topics.map((topic) => [topic.id, topic]));
-
-  const topicContext = topics.map((topic) => ({
-    id: topic.id,
-    subject: topic.subject,
-    title: topic.title,
-    defaultMonth: topic.month,
-    defaultWeek: topic.week_number,
+  const topicContext = topics.map((topic, index) => ({
+    i: index,
+    s: topic.subject,
+    t: topic.title,
   }));
 
-  let userContent = `Available topics (JSON):\n${JSON.stringify(topicContext)}\n\nStudent's request: ${prompt}`;
-  if (previousSchedule && previousSchedule.length > 0) {
-    userContent += `\n\nCurrent draft schedule to refine (JSON):\n${JSON.stringify(previousSchedule)}`;
-  }
+  const userContent = `Available topics (JSON):\n${JSON.stringify(topicContext)}\n\nStudent's request: ${prompt}`;
 
   let raw: string | null | undefined;
   try {
     const completion = await groq.chat.completions.create({
       model: CHAT_MODEL,
-      max_completion_tokens: 8000,
+      max_completion_tokens: MAX_COMPLETION_TOKENS,
+      reasoning_effort: "low",
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: userContent },
@@ -89,8 +91,16 @@ export async function POST(request: NextRequest) {
       },
     });
     raw = completion.choices[0]?.message?.content;
-  } catch {
-    return NextResponse.json({ error: "The AI request failed. Please try again." }, { status: 502 });
+  } catch (err) {
+    const isRateLimited = err instanceof Error && /rate.?limit/i.test(err.message);
+    return NextResponse.json(
+      {
+        error: isRateLimited
+          ? "The AI is rate-limited right now — wait about a minute and try again."
+          : "The AI request failed. Please try again.",
+      },
+      { status: 502 }
+    );
   }
 
   if (!raw) {
@@ -118,7 +128,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const validEntries = aiResult.data.schedule.filter((entry) => topicById.has(entry.topicId));
+  const validEntries = aiResult.data.schedule.filter(
+    (entry) => entry.i >= 0 && entry.i < topics.length
+  );
 
   if (validEntries.length === 0) {
     return NextResponse.json(
@@ -135,16 +147,16 @@ export async function POST(request: NextRequest) {
 
   const orderCounters = new Map<string, number>();
   const schedule: PreviewScheduleEntry[] = validEntries.map((entry) => {
-    const key = `${entry.month}:${entry.weekNumber}`;
+    const key = `${entry.m}:${entry.w}`;
     const orderIndex = (orderCounters.get(key) ?? 0) + 1;
     orderCounters.set(key, orderIndex);
-    const topic = topicById.get(entry.topicId)!;
+    const topic = topics[entry.i];
     return {
-      topicId: entry.topicId,
+      topicId: topic.id,
       subject: topic.subject,
       title: topic.title,
-      month: entry.month,
-      weekNumber: entry.weekNumber,
+      month: entry.m,
+      weekNumber: entry.w,
       orderIndex,
     };
   });
