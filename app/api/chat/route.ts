@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
-import { anthropic, CHAT_MAX_TOKENS, CHAT_MODEL } from "@/lib/anthropic/client";
-import { SYSTEM_PROMPT } from "@/lib/anthropic/system-prompt";
+import { groq, CHAT_MAX_TOKENS, CHAT_MODEL } from "@/lib/groq/client";
+import { SYSTEM_PROMPT } from "@/lib/groq/system-prompt";
 import { chatRequestSchema } from "@/lib/validation/chat";
 
 export async function POST(request: NextRequest) {
@@ -77,19 +77,21 @@ export async function POST(request: NextRequest) {
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
-        const anthropicStream = anthropic.messages.stream({
+        const groqStream = await groq.chat.completions.create({
           model: CHAT_MODEL,
-          max_tokens: CHAT_MAX_TOKENS,
-          system: SYSTEM_PROMPT,
-          messages: modelMessages,
+          max_completion_tokens: CHAT_MAX_TOKENS,
+          stream: true,
+          messages: [{ role: "system", content: SYSTEM_PROMPT }, ...modelMessages],
         });
 
-        anthropicStream.on("text", (delta) => {
-          fullText += delta;
-          controller.enqueue(encoder.encode(delta));
-        });
+        for await (const chunk of groqStream) {
+          const delta = chunk.choices[0]?.delta?.content;
+          if (delta) {
+            fullText += delta;
+            controller.enqueue(encoder.encode(delta));
+          }
+        }
 
-        await anthropicStream.finalMessage();
         controller.close();
       } catch (err) {
         const message = err instanceof Error ? err.message : "Something went wrong.";

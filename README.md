@@ -1,8 +1,8 @@
 # MeeruGate
 
-A study tracker for GATE CSE exam prep with social accountability — syllabus planner with streaks, invite-code squads, per-topic notes, weekly/monthly goals, and a Claude-powered doubt-solving/quiz chatbox.
+A study tracker for GATE CSE exam prep with social accountability — syllabus planner with streaks, invite-code squads, per-topic notes, weekly/monthly goals, and a Groq-powered doubt-solving/quiz chatbox.
 
-Built with Next.js (App Router), Supabase (Postgres + Auth), Tailwind + shadcn/ui, and the Anthropic API.
+Built with Next.js (App Router), Supabase (Postgres + Auth), Tailwind + shadcn/ui, and the Groq API (`openai/gpt-oss-120b`).
 
 ## Setup
 
@@ -31,9 +31,9 @@ In **Authentication > URL Configuration**:
 
 Magic link auth works out of the box. For **Google OAuth**, go to **Authentication > Providers > Google**, enable it, and supply a Client ID/Secret from a Google Cloud OAuth client (Web application type) — set its authorized redirect URI to `https://<your-project-ref>.supabase.co/auth/v1/callback`.
 
-### 4. Get an Anthropic API key
+### 4. Get a Groq API key
 
-Create a key at [platform.claude.com](https://platform.claude.com) and set `ANTHROPIC_API_KEY`.
+Create a key at [console.groq.com/keys](https://console.groq.com/keys) and set `GROQ_API_KEY`.
 
 ### 5. Configure environment variables
 
@@ -57,7 +57,7 @@ Open [http://localhost:3000](http://localhost:3000). Sign in, then join the pre-
 - `supabase/migrations/` — hand-authored SQL, run manually in Supabase Studio (no Supabase CLI/Docker dependency)
 - `app/(marketing)/` — landing page, login, OAuth callback (public)
 - `app/(app)/` — dashboard, planner, squad, notes, goals, chat (auth-protected)
-- `app/api/chat/` — streaming Anthropic route
+- `app/api/chat/` — streaming Groq route
 - `lib/supabase/` — browser/server Supabase clients + session-refresh helper used by `proxy.ts`
 - `lib/queries/` — server-side data fetchers
 - `lib/streaks.ts` — streak computation from completion activity
