@@ -110,7 +110,7 @@ export function ChatWindow({
         <ScrollArea className="flex-1 px-5 py-4">
           {messages.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center gap-2 py-16 text-center text-muted-foreground">
-              <Sparkles className="size-8 text-orange-500" />
+              <Sparkles className="size-8 text-brand" />
               <p className="text-sm">
                 Ask a doubt, or say &ldquo;quiz me on {topicTitle ?? "Operating Systems"}&rdquo;.
               </p>
@@ -126,7 +126,7 @@ export function ChatWindow({
                     className={cn(
                       "max-w-[85%] rounded-glass-sm px-4 py-2.5 text-sm",
                       message.role === "user"
-                        ? "bg-accent-gradient text-white"
+                        ? "glass-surface-sent text-foreground"
                         : "glass-surface"
                     )}
                   >

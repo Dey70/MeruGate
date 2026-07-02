@@ -29,7 +29,7 @@ export default async function SquadPage() {
 
         <GlassCard className="mx-auto w-full max-w-sm" strong>
           <div className="mb-5 text-center">
-            <Users2 className="mx-auto size-8 text-orange-500" />
+            <Users2 className="mx-auto size-8 text-brand" />
             <p className="mt-2 text-sm text-muted-foreground">
               Join with the invite code your team shared, or start a new squad.
             </p>

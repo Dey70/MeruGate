@@ -83,7 +83,7 @@ function LoginForm() {
 
         {sent ? (
           <div className="flex flex-col items-center gap-3 py-6 text-center">
-            <MailCheck className="size-9 text-orange-500" />
+            <MailCheck className="size-9 text-brand" />
             <p className="text-sm font-medium">Check your inbox</p>
             <p className="text-sm text-muted-foreground">
               We sent a magic link to <span className="font-medium">{email}</span>.

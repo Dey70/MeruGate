@@ -32,7 +32,7 @@ export default function LandingPage() {
     <div className="flex flex-1 flex-col items-center justify-center px-6 py-16">
       <div className="mx-auto w-full max-w-3xl text-center">
         <span className="glass-surface shadow-glass-sm mx-auto mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium text-muted-foreground">
-          <Sparkles className="size-3.5 text-orange-500" />
+          <Sparkles className="size-3.5 text-brand" />
           Built for GATE CSE, with your squad
         </span>
         <h1 className="text-balance text-5xl font-bold tracking-tight sm:text-6xl">
@@ -54,7 +54,7 @@ export default function LandingPage() {
       <div className="mt-20 grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2">
         {FEATURES.map((feature) => (
           <GlassCard key={feature.title} interactive>
-            <feature.icon className="size-6 text-orange-500" />
+            <feature.icon className="size-6 text-brand" />
             <h3 className="mt-3 font-semibold">{feature.title}</h3>
             <p className="mt-1 text-sm text-muted-foreground">{feature.description}</p>
           </GlassCard>

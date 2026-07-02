@@ -51,7 +51,7 @@ export default async function TopicDetailPage({
       </Link>
 
       <GlassCard strong>
-        <p className="text-xs font-semibold tracking-wide text-orange-500 uppercase">
+        <p className="text-xs font-semibold tracking-wide text-brand uppercase">
           {topic.subject} · Month {topic.month}, Week {topic.week_number}
         </p>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-4">

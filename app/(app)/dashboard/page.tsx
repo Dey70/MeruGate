@@ -50,7 +50,7 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <GlassCard strong className="sm:col-span-1">
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-            <Flame className="size-4 text-orange-500" />
+            <Flame className="size-4 text-brand" />
             Current streak
           </div>
           <div className="mt-2 flex items-end gap-2">
@@ -65,7 +65,7 @@ export default async function DashboardPage() {
         <GlassCard strong className="sm:col-span-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <ListChecks className="size-4 text-orange-500" />
+              <ListChecks className="size-4 text-brand" />
               Overall syllabus progress
             </div>
             <span className="text-sm font-semibold">{overallProgress}%</span>
@@ -107,7 +107,7 @@ export default async function DashboardPage() {
           <GlassCard strong>
             <GlassCardHeader>
               <GlassCardTitle className="flex items-center gap-2">
-                <Users2 className="size-4 text-orange-500" />
+                <Users2 className="size-4 text-brand" />
                 Squad
               </GlassCardTitle>
             </GlassCardHeader>
@@ -140,7 +140,7 @@ export default async function DashboardPage() {
           <GlassCard strong>
             <GlassCardHeader>
               <GlassCardTitle className="flex items-center gap-2">
-                <Target className="size-4 text-orange-500" />
+                <Target className="size-4 text-brand" />
                 This week&rsquo;s goal
               </GlassCardTitle>
             </GlassCardHeader>

@@ -47,7 +47,7 @@ export function NotesList({ notes }: { notes: NoteWithTopic[] }) {
               <GlassCard interactive className="h-full">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold tracking-wide text-orange-500 uppercase">
+                    <p className="text-xs font-semibold tracking-wide text-brand uppercase">
                       {note.topicSubject}
                     </p>
                     <h3 className="mt-0.5 truncate font-semibold">{note.topicTitle}</h3>

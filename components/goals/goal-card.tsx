@@ -35,7 +35,7 @@ export function GoalCard({
   return (
     <GlassCard strong>
       <div className="flex items-center gap-2">
-        <Target className="size-5 text-orange-500" />
+        <Target className="size-5 text-brand" />
         <div>
           <h2 className="font-semibold">{title}</h2>
           <p className="text-xs text-muted-foreground">{periodLabel}</p>
