@@ -6,6 +6,7 @@ export interface SquadMemberProgress {
   displayName: string | null;
   avatarUrl: string | null;
   completedCount: number;
+  totalTopics: number;
   currentStreak: number;
 }
 
@@ -13,7 +14,6 @@ export interface SquadInfo {
   id: string;
   name: string;
   inviteCode: string | null;
-  totalTopics: number;
   members: SquadMemberProgress[];
 }
 
@@ -32,34 +32,41 @@ export async function getMySquad(userId: string): Promise<SquadInfo | null> {
 
   const squadId = membership.squad_id;
 
-  const [squadResult, memberRowsResult, inviteResult, topicsCountResult] = await Promise.all([
-    supabase.from("squads").select("id, name").eq("id", squadId).single(),
-    supabase.from("squad_members").select("user_id").eq("squad_id", squadId),
-    supabase
-      .from("squad_invites")
-      .select("code")
-      .eq("squad_id", squadId)
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .maybeSingle(),
-    supabase.from("topics").select("id", { count: "exact", head: true }),
-  ]);
+  const [squadResult, memberRowsResult, inviteResult, defaultTopicsCountResult] =
+    await Promise.all([
+      supabase.from("squads").select("id, name").eq("id", squadId).single(),
+      supabase.from("squad_members").select("user_id").eq("squad_id", squadId),
+      supabase
+        .from("squad_invites")
+        .select("code")
+        .eq("squad_id", squadId)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle(),
+      supabase.from("topics").select("id", { count: "exact", head: true }),
+    ]);
 
   if (squadResult.error) throw squadResult.error;
   if (memberRowsResult.error) throw memberRowsResult.error;
-  if (topicsCountResult.error) throw topicsCountResult.error;
+  if (defaultTopicsCountResult.error) throw defaultTopicsCountResult.error;
 
   const memberIds = (memberRowsResult.data ?? []).map((row) => row.user_id);
+  const defaultTopicsCount = defaultTopicsCountResult.count ?? 0;
 
-  const [usersResult, progressResult, activityResult] = await Promise.all([
+  const [usersResult, progressResult, activityResult, scheduleCountsResult] = await Promise.all([
     supabase.from("users").select("id, display_name, avatar_url").in("id", memberIds),
     supabase.from("user_topic_progress").select("user_id, completed").in("user_id", memberIds),
     supabase.from("user_activity_days").select("user_id, activity_date").in("user_id", memberIds),
+    // RLS on user_topic_schedule is owner-only (custom plans are private),
+    // so per-member counts have to come through this security-definer
+    // function rather than a direct table select — see 0004_user_topic_schedule.sql.
+    supabase.rpc("squad_topic_counts"),
   ]);
 
   if (usersResult.error) throw usersResult.error;
   if (progressResult.error) throw progressResult.error;
   if (activityResult.error) throw activityResult.error;
+  if (scheduleCountsResult.error) throw scheduleCountsResult.error;
 
   const userMap = new Map((usersResult.data ?? []).map((u) => [u.id, u]));
 
@@ -76,6 +83,13 @@ export async function getMySquad(userId: string): Promise<SquadInfo | null> {
     activityByUser.set(row.user_id, list);
   }
 
+  // Each member's own topic count if they're on a custom plan, else the
+  // shared default — so progress % stays fair when plans differ.
+  const topicCountByUser = new Map<string, number>();
+  for (const row of scheduleCountsResult.data ?? []) {
+    topicCountByUser.set(row.user_id, row.topic_count);
+  }
+
   const members: SquadMemberProgress[] = memberIds.map((id) => {
     const profile = userMap.get(id);
     const { currentStreak } = computeStreaks(activityByUser.get(id) ?? []);
@@ -84,6 +98,7 @@ export async function getMySquad(userId: string): Promise<SquadInfo | null> {
       displayName: profile?.display_name ?? null,
       avatarUrl: profile?.avatar_url ?? null,
       completedCount: completedByUser.get(id) ?? 0,
+      totalTopics: topicCountByUser.get(id) || defaultTopicsCount,
       currentStreak,
     };
   });
@@ -96,7 +111,6 @@ export async function getMySquad(userId: string): Promise<SquadInfo | null> {
     id: squadResult.data.id,
     name: squadResult.data.name,
     inviteCode: inviteResult.data?.code ?? null,
-    totalTopics: topicsCountResult.count ?? 0,
     members,
   };
 }

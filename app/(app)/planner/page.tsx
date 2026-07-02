@@ -1,7 +1,11 @@
+import Link from "next/link";
+import { Sparkles, RotateCcw } from "lucide-react";
+
 import { createClient } from "@/lib/supabase/server";
 import {
   getTopicsWithProgress,
   getUserActivityDates,
+  getUserSchedule,
   groupTopicsByMonth,
 } from "@/lib/queries/planner";
 import { computeStreaks } from "@/lib/streaks";
@@ -10,6 +14,8 @@ import { GlassCard } from "@/components/glass/glass-card";
 import { StreakBadge } from "@/components/shared/streak-badge";
 import { TopicChecklistItem } from "@/components/planner/topic-checklist-item";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { resetToDefaultAction } from "@/app/(app)/planner/customize/actions";
 
 export default async function PlannerPage() {
   const supabase = await createClient();
@@ -19,11 +25,13 @@ export default async function PlannerPage() {
 
   if (!user) return null;
 
-  const [topics, activityDates] = await Promise.all([
+  const [topics, activityDates, schedule] = await Promise.all([
     getTopicsWithProgress(user.id),
     getUserActivityDates(user.id),
+    getUserSchedule(user.id),
   ]);
 
+  const hasCustomPlan = schedule.length > 0;
   const { currentStreak } = computeStreaks(activityDates);
   const completedCount = topics.filter((t) => t.completed).length;
   const overallProgress = progressPercent(completedCount, topics.length);
@@ -44,6 +52,32 @@ export default async function PlannerPage() {
         </div>
         <StreakBadge streak={currentStreak} />
       </div>
+
+      <GlassCard className="flex flex-wrap items-center justify-between gap-3">
+        {hasCustomPlan ? (
+          <>
+            <span className="text-sm text-muted-foreground">Using your custom plan</span>
+            <form action={resetToDefaultAction}>
+              <Button type="submit" variant="ghost" size="sm">
+                <RotateCcw className="size-3.5" />
+                Reset to default plan
+              </Button>
+            </form>
+          </>
+        ) : (
+          <>
+            <span className="text-sm text-muted-foreground">
+              Don&rsquo;t like this plan?
+            </span>
+            <Button asChild variant="accent" size="sm">
+              <Link href="/planner/customize">
+                <Sparkles className="size-3.5" />
+                Create your own with AI
+              </Link>
+            </Button>
+          </>
+        )}
+      </GlassCard>
 
       <GlassCard>
         <div className="flex items-center justify-between text-sm font-medium">

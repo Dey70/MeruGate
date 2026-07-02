@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 
+export { groupTopicsByMonth } from "@/lib/topic-grouping";
+
 export interface TopicRow {
   id: string;
   subject: string;
@@ -43,8 +45,68 @@ export async function getUserProgressMap(
   return map;
 }
 
+export interface ScheduleEntry {
+  topicId: string;
+  month: number;
+  weekNumber: number;
+  orderIndex: number;
+}
+
+export async function getUserSchedule(userId: string): Promise<ScheduleEntry[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("user_topic_schedule")
+    .select("topic_id, month, week_number, order_index")
+    .eq("user_id", userId);
+
+  if (error) throw error;
+  return (data ?? []).map((row) => ({
+    topicId: row.topic_id,
+    month: row.month,
+    weekNumber: row.week_number,
+    orderIndex: row.order_index,
+  }));
+}
+
+// A user with no schedule rows is on the default plan. A user with any rows
+// sees only those topics, at the month/week they were scheduled — everything
+// else stays hidden (but their completion history on it is untouched).
+export async function getEffectiveTopics(userId: string): Promise<TopicRow[]> {
+  const schedule = await getUserSchedule(userId);
+  if (schedule.length === 0) return getAllTopics();
+
+  const supabase = await createClient();
+  const topicIds = schedule.map((entry) => entry.topicId);
+  const { data, error } = await supabase
+    .from("topics")
+    .select("id, subject, title")
+    .in("id", topicIds);
+
+  if (error) throw error;
+  const topicMap = new Map((data ?? []).map((topic) => [topic.id, topic]));
+
+  return schedule
+    .map((entry): TopicRow | null => {
+      const topic = topicMap.get(entry.topicId);
+      if (!topic) return null;
+      return {
+        id: topic.id,
+        subject: topic.subject,
+        title: topic.title,
+        month: entry.month,
+        week_number: entry.weekNumber,
+        order_index: entry.orderIndex,
+      };
+    })
+    .filter((topic): topic is TopicRow => topic !== null)
+    .sort((a, b) => a.order_index - b.order_index);
+}
+
 export async function getTopicsWithProgress(userId: string): Promise<TopicWithProgress[]> {
-  const [topics, progressMap] = await Promise.all([getAllTopics(), getUserProgressMap(userId)]);
+  const [topics, progressMap] = await Promise.all([
+    getEffectiveTopics(userId),
+    getUserProgressMap(userId),
+  ]);
 
   return topics.map((topic) => {
     const progress = progressMap.get(topic.id);
@@ -65,24 +127,4 @@ export async function getUserActivityDates(userId: string): Promise<string[]> {
 
   if (error) throw error;
   return (data ?? []).map((row) => row.activity_date);
-}
-
-export function groupTopicsByMonth<T extends TopicRow>(topics: T[]) {
-  const byMonth = new Map<number, Map<number, T[]>>();
-
-  for (const topic of topics) {
-    if (!byMonth.has(topic.month)) byMonth.set(topic.month, new Map());
-    const weeks = byMonth.get(topic.month)!;
-    if (!weeks.has(topic.week_number)) weeks.set(topic.week_number, []);
-    weeks.get(topic.week_number)!.push(topic);
-  }
-
-  return Array.from(byMonth.entries())
-    .sort(([a], [b]) => a - b)
-    .map(([month, weeks]) => ({
-      month,
-      weeks: Array.from(weeks.entries())
-        .sort(([a], [b]) => a - b)
-        .map(([weekNumber, weekTopics]) => ({ weekNumber, topics: weekTopics })),
-    }));
 }

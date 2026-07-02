@@ -272,6 +272,36 @@ export interface Database {
         };
         Relationships: [];
       };
+      user_topic_schedule: {
+        Row: {
+          id: string;
+          user_id: string;
+          topic_id: string;
+          month: number;
+          week_number: number;
+          order_index: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          topic_id: string;
+          month: number;
+          week_number: number;
+          order_index: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          topic_id?: string;
+          month?: number;
+          week_number?: number;
+          order_index?: number;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       user_activity_days: {
@@ -294,6 +324,14 @@ export interface Database {
       redeem_invite: {
         Args: { invite_code: string };
         Returns: string;
+      };
+      replace_user_schedule: {
+        Args: { entries: Json };
+        Returns: undefined;
+      };
+      squad_topic_counts: {
+        Args: Record<string, never>;
+        Returns: { user_id: string; topic_count: number }[];
       };
     };
   };

@@ -67,7 +67,7 @@ export default async function SquadPage() {
             displayName={member.displayName}
             avatarUrl={member.avatarUrl}
             completedCount={member.completedCount}
-            totalTopics={squad.totalTopics}
+            totalTopics={member.totalTopics}
             currentStreak={member.currentStreak}
             isYou={member.userId === user.id}
           />
