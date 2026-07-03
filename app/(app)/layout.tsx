@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Sidebar } from "@/components/layout/sidebar";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { BottomTabBar } from "@/components/layout/bottom-tab-bar";
+import { PageTransition } from "@/components/layout/page-transition";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -25,7 +26,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <MobileNav />
         {/* pb-24 clears the fixed BottomTabBar; lg:py-10 removes it where the bar isn't shown. */}
         <main className="flex-1 px-4 pt-6 pb-24 lg:px-8 lg:py-10">
-          <div className="mx-auto w-full max-w-6xl">{children}</div>
+          <div className="mx-auto w-full max-w-6xl">
+            <PageTransition>{children}</PageTransition>
+          </div>
         </main>
       </div>
       <BottomTabBar />

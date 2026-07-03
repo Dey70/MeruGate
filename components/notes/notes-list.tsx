@@ -42,9 +42,13 @@ export function NotesList({ notes }: { notes: NoteWithTopic[] }) {
         </GlassCard>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {filtered.map((note) => (
+          {filtered.map((note, index) => (
             <Link key={note.id} href={`/planner/${note.topicId}`}>
-              <GlassCard interactive className="h-full">
+              <GlassCard
+                interactive
+                className="h-full"
+                style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
+              >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold tracking-wide text-brand uppercase">

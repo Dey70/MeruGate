@@ -61,7 +61,7 @@ export default async function SquadPage() {
       <InviteCodeCard squadId={squad.id} code={squad.inviteCode} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {squad.members.map((member) => (
+        {squad.members.map((member, index) => (
           <MemberCard
             key={member.userId}
             displayName={member.displayName}
@@ -70,6 +70,7 @@ export default async function SquadPage() {
             totalTopics={member.totalTopics}
             currentStreak={member.currentStreak}
             isYou={member.userId === user.id}
+            style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
           />
         ))}
       </div>

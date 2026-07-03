@@ -88,14 +88,19 @@ export default async function PlannerPage() {
       </GlassCard>
 
       <div className="flex flex-col gap-4">
-        {months.map(({ month, weeks }) => {
+        {months.map(({ month, weeks }, index) => {
           const monthTopics = weeks.flatMap((w) => w.topics);
           const monthCompleted = monthTopics.filter((t) => t.completed).length;
           const monthProgress = progressPercent(monthCompleted, monthTopics.length);
           const subjects = Array.from(new Set(monthTopics.map((t) => t.subject)));
 
           return (
-            <GlassCard key={month} className="p-0" strong>
+            <GlassCard
+              key={month}
+              className="p-0"
+              strong
+              style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
+            >
               <details open={month === firstIncompleteMonth} className="group">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-4 sm:gap-4 sm:px-6 sm:py-5">
                   <div className="min-w-0 flex-1">

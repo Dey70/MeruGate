@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 import { GlassCard } from "@/components/glass/glass-card";
 import { StreakBadge } from "@/components/shared/streak-badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,6 +13,7 @@ export function MemberCard({
   totalTopics,
   currentStreak,
   isYou,
+  style,
 }: {
   displayName: string | null;
   avatarUrl: string | null;
@@ -18,12 +21,13 @@ export function MemberCard({
   totalTopics: number;
   currentStreak: number;
   isYou: boolean;
+  style?: CSSProperties;
 }) {
   const percent = progressPercent(completedCount, totalTopics);
   const name = displayName ?? "Squad member";
 
   return (
-    <GlassCard interactive>
+    <GlassCard interactive style={style}>
       <div className="flex items-center gap-3">
         <Avatar className="size-11">
           <AvatarImage src={avatarUrl ?? undefined} alt={name} />

@@ -16,6 +16,7 @@
   --color-glass-border: var(--glass-border);
   --color-brand: #25d366;
   --color-brand-dark: #075e54;
+  --animate-fade-in-up: fade-in-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
   --radius-glass: 1.375rem;
   --radius-glass-sm: 1rem;
   --shadow-glass: 0 1px 1px 0 rgb(7 94 84 / 0.06), 0 12px 32px -8px rgb(7 94 84 / 0.18),
@@ -71,6 +72,17 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 :root {
@@ -161,6 +173,17 @@
        one overlooked long string on a narrow phone shouldn't turn into a
        sideways-scrolling page either. */
     overflow-x: hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 

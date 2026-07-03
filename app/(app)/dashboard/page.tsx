@@ -48,7 +48,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <GlassCard strong className="sm:col-span-1">
+        <GlassCard strong className="sm:col-span-1" style={{ animationDelay: "0ms" }}>
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <Flame className="size-4 text-brand" />
             Current streak
@@ -62,7 +62,7 @@ export default async function DashboardPage() {
           <p className="mt-1 text-xs text-muted-foreground">Longest: {longestStreak} days</p>
         </GlassCard>
 
-        <GlassCard strong className="sm:col-span-2">
+        <GlassCard strong className="sm:col-span-2" style={{ animationDelay: "60ms" }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <ListChecks className="size-4 text-brand" />
@@ -78,7 +78,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <GlassCard strong className="lg:col-span-2">
+        <GlassCard strong className="lg:col-span-2" style={{ animationDelay: "120ms" }}>
           <GlassCardHeader>
             <GlassCardTitle>Up next</GlassCardTitle>
             <Link href="/planner" className="text-sm text-muted-foreground hover:text-foreground">
@@ -104,7 +104,7 @@ export default async function DashboardPage() {
         </GlassCard>
 
         <div className="flex flex-col gap-4">
-          <GlassCard strong>
+          <GlassCard strong style={{ animationDelay: "180ms" }}>
             <GlassCardHeader>
               <GlassCardTitle className="flex items-center gap-2">
                 <Users2 className="size-4 text-brand" />
@@ -137,7 +137,7 @@ export default async function DashboardPage() {
             )}
           </GlassCard>
 
-          <GlassCard strong>
+          <GlassCard strong style={{ animationDelay: "240ms" }}>
             <GlassCardHeader>
               <GlassCardTitle className="flex items-center gap-2">
                 <Target className="size-4 text-brand" />
@@ -166,7 +166,7 @@ export default async function DashboardPage() {
             </Button>
           </GlassCard>
 
-          <GlassCard strong interactive>
+          <GlassCard strong interactive style={{ animationDelay: "300ms" }}>
             <Link href="/chat" className="flex items-center gap-3">
               <span className="bg-accent-gradient flex size-9 items-center justify-center rounded-full text-white">
                 <Sparkles className="size-4" />

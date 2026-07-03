@@ -52,8 +52,12 @@ export default function LandingPage() {
       </div>
 
       <div className="mt-20 grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2">
-        {FEATURES.map((feature) => (
-          <GlassCard key={feature.title} interactive>
+        {FEATURES.map((feature, index) => (
+          <GlassCard
+            key={feature.title}
+            interactive
+            style={{ animationDelay: `${150 + index * 80}ms` }}
+          >
             <feature.icon className="size-6 text-brand" />
             <h3 className="mt-3 font-semibold">{feature.title}</h3>
             <p className="mt-1 text-sm text-muted-foreground">{feature.description}</p>
