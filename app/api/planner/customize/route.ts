@@ -9,15 +9,17 @@ import {
   type PreviewScheduleEntry,
 } from "@/lib/validation/planner-customize";
 
-const SYSTEM_PROMPT = `You build a personalized month/week study schedule for a GATE CSE student.
+function buildSystemPrompt(topicCount: number): string {
+  return `You build a personalized month/week study schedule for a GATE CSE student.
 
-You are given the full list of available topics as JSON, each shortened to keys "i" (index), "s" (subject), "t" (title). You must ONLY use topics from this list, referenced by their exact "i" number — never invent a topic, a title, or an index that isn't in the list.
+You are given the full list of ${topicCount} available topics as JSON, each shortened to keys "i" (index), "s" (subject), "t" (title). You must ONLY use topics from this list, referenced by their exact "i" number — never invent a topic, a title, or an index that isn't in the list.
 
-COMPLETENESS IS MANDATORY: every single topic belonging to a subject the student is keeping must appear in your output. Do not sample a handful of "highlights" from a subject — if you keep a subject, include ALL of its topics from the list, each assigned to some month/week. Only omit a topic if the student explicitly asked to skip that subject or topic entirely, or explicitly asked to drop specific topics. A schedule that only includes a fraction of the topics from a kept subject is wrong. Weeks in the source list typically hold 3-5 topics each — match that density; do not compress a subject down to one topic per week unless the student asked for a much shorter timeline than the subject needs.
+COMPLETENESS IS MANDATORY: every single topic belonging to a subject the student is keeping must appear in your output. Do not sample a handful of "highlights" from a subject — if you keep a subject, include ALL of its topics from the list, each assigned to some month/week. Only omit a topic if the student explicitly asked to skip that subject or topic entirely, or explicitly asked to drop specific topics. A schedule that only includes a fraction of the topics from a kept subject is wrong. Match the density of topics-per-week you see across the source list's subjects — do not artificially compress a subject down to fewer weeks than its topic count warrants unless the student asked for a much shorter timeline than the subject needs.
 
-Respond with JSON matching this shape: { "note": "one or two sentences summarizing what you did", "schedule": [ { "i": <integer index from the list>, "m": <integer month, 1-based>, "w": <integer week, 1-based, resets each new month> } ] }. The schedule array must contain one entry per topic you are keeping — for a student keeping most subjects, that means most of the ~176 available topics.
+Respond with JSON matching this shape: { "note": "one or two sentences summarizing what you did", "schedule": [ { "i": <integer index from the list>, "m": <integer month, 1-based>, "w": <integer week, 1-based, resets each new month> } ] }. The schedule array must contain one entry per topic you are keeping — for a student keeping most subjects, that means most of the ${topicCount} available topics.
 
 Group topics sensibly — keep related topics from the same subject together within a week or a short run of weeks rather than scattering them randomly. The student's request may contain multiple instructions accumulated over a conversation (an original request plus follow-up refinements) — satisfy ALL of them together as one coherent final plan. Be economical in your reasoning, but the schedule array itself must be complete — do not truncate or sample it.`;
+}
 
 const SCHEDULE_JSON_SCHEMA = {
   type: "object",
@@ -82,7 +84,7 @@ export async function POST(request: NextRequest) {
       max_completion_tokens: MAX_COMPLETION_TOKENS,
       reasoning_effort: "low",
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
+        { role: "system", content: buildSystemPrompt(topics.length) },
         { role: "user", content: userContent },
       ],
       response_format: {
