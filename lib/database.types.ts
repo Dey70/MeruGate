@@ -47,11 +47,41 @@ export interface Database {
         };
         Relationships: [];
       };
+      subjects: {
+        Row: {
+          id: string;
+          syllabus_id: string;
+          name: string;
+          slug: string;
+          order_index: number;
+          icon: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          syllabus_id: string;
+          name: string;
+          slug: string;
+          order_index: number;
+          icon?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          syllabus_id?: string;
+          name?: string;
+          slug?: string;
+          order_index?: number;
+          icon?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       topics: {
         Row: {
           id: string;
           syllabus_id: string;
-          subject: string;
+          subject_id: string;
           title: string;
           month: number;
           week_number: number;
@@ -61,7 +91,7 @@ export interface Database {
         Insert: {
           id?: string;
           syllabus_id: string;
-          subject: string;
+          subject_id: string;
           title: string;
           month: number;
           week_number: number;
@@ -71,14 +101,22 @@ export interface Database {
         Update: {
           id?: string;
           syllabus_id?: string;
-          subject?: string;
+          subject_id?: string;
           title?: string;
           month?: number;
           week_number?: number;
           order_index?: number;
           created_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "topics_subject_id_fkey";
+            columns: ["subject_id"];
+            isOneToOne: true;
+            referencedRelation: "subjects";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       user_topic_progress: {
         Row: {
@@ -188,7 +226,7 @@ export interface Database {
           user_id: string;
           topic_id: string;
           content_md: string;
-          notion_link: string | null;
+          resources: Json;
           created_at: string;
           updated_at: string;
         };
@@ -197,7 +235,7 @@ export interface Database {
           user_id: string;
           topic_id: string;
           content_md?: string;
-          notion_link?: string | null;
+          resources?: Json;
           created_at?: string;
           updated_at?: string;
         };
@@ -206,7 +244,7 @@ export interface Database {
           user_id?: string;
           topic_id?: string;
           content_md?: string;
-          notion_link?: string | null;
+          resources?: Json;
           created_at?: string;
           updated_at?: string;
         };

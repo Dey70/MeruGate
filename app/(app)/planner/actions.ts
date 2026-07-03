@@ -31,6 +31,7 @@ export async function toggleTopicCompletion(topicId: string, completed: boolean)
   if (error) throw error;
 
   revalidatePath("/planner");
+  revalidatePath("/subjects");
   revalidatePath("/dashboard");
   revalidatePath("/squad");
 }

@@ -35,12 +35,24 @@ async function countCompletedInRange(
   const rows = data ?? [];
   if (!subject || rows.length === 0) return rows.length;
 
+  // goals.subject is a free-text name (unchanged UI); resolve it to a
+  // subject_id before filtering topics. A stale/typo'd goal subject that
+  // matches no row returns 0, same silent-miss behavior as before.
+  const { data: subjectRow, error: subjectError } = await supabase
+    .from("subjects")
+    .select("id")
+    .eq("name", subject)
+    .maybeSingle();
+
+  if (subjectError) throw subjectError;
+  if (!subjectRow) return 0;
+
   const topicIds = rows.map((row) => row.topic_id);
   const { data: topics, error: topicsError } = await supabase
     .from("topics")
     .select("id")
     .in("id", topicIds)
-    .eq("subject", subject);
+    .eq("subject_id", subjectRow.id);
 
   if (topicsError) throw topicsError;
   return topics?.length ?? 0;

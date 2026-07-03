@@ -14,10 +14,17 @@ export async function upsertNoteAction(
   _prevState: NoteActionState,
   formData: FormData
 ): Promise<NoteActionState> {
+  let resources: unknown = [];
+  try {
+    resources = JSON.parse((formData.get("resourcesJson") as string | null) ?? "[]");
+  } catch {
+    return { error: "Invalid resource list." };
+  }
+
   const parsed = upsertNoteSchema.safeParse({
     topicId: formData.get("topicId"),
     contentMd: formData.get("contentMd") ?? "",
-    notionLink: formData.get("notionLink") ?? "",
+    resources,
   });
 
   if (!parsed.success) {
@@ -36,7 +43,7 @@ export async function upsertNoteAction(
       user_id: user.id,
       topic_id: parsed.data.topicId,
       content_md: parsed.data.contentMd,
-      notion_link: parsed.data.notionLink ?? null,
+      resources: parsed.data.resources,
     },
     { onConflict: "user_id,topic_id" }
   );

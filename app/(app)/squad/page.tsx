@@ -69,6 +69,8 @@ export default async function SquadPage() {
             completedCount={member.completedCount}
             totalTopics={member.totalTopics}
             currentStreak={member.currentStreak}
+            subjects={member.subjects}
+            monthlyTrend={member.monthlyTrend}
             isYou={member.userId === user.id}
             style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
           />

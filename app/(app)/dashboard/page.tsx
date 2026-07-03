@@ -6,11 +6,13 @@ import { createClient } from "@/lib/supabase/server";
 import { getTopicsWithProgress, getUserActivityDates } from "@/lib/queries/planner";
 import { getMySquad } from "@/lib/queries/squad";
 import { getCurrentGoals } from "@/lib/queries/goals";
+import { getSubjectsWithProgress } from "@/lib/queries/subjects";
 import { computeStreaks } from "@/lib/streaks";
 import { progressPercent } from "@/lib/progress";
 import { GlassCard, GlassCardHeader, GlassCardTitle } from "@/components/glass/glass-card";
 import { StreakBadge } from "@/components/shared/streak-badge";
 import { TopicChecklistItem } from "@/components/planner/topic-checklist-item";
+import { SubjectProgressPanel } from "@/components/subjects/subject-progress-panel";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 
@@ -22,11 +24,12 @@ export default async function DashboardPage() {
 
   if (!user) return null;
 
-  const [topics, activityDates, squad, goals] = await Promise.all([
+  const [topics, activityDates, squad, goals, subjectProgress] = await Promise.all([
     getTopicsWithProgress(user.id),
     getUserActivityDates(user.id),
     getMySquad(user.id),
     getCurrentGoals(user.id),
+    getSubjectsWithProgress(user.id),
   ]);
 
   const { currentStreak, longestStreak } = computeStreaks(activityDates);
@@ -179,6 +182,16 @@ export default async function DashboardPage() {
           </GlassCard>
         </div>
       </div>
+
+      <GlassCard strong style={{ animationDelay: "360ms" }}>
+        <GlassCardHeader>
+          <GlassCardTitle>Subject progress</GlassCardTitle>
+          <Link href="/subjects" className="text-sm text-muted-foreground hover:text-foreground">
+            <ArrowRight className="size-4" />
+          </Link>
+        </GlassCardHeader>
+        <SubjectProgressPanel subjects={subjectProgress} sortBy="weakest" limit={5} />
+      </GlassCard>
     </div>
   );
 }

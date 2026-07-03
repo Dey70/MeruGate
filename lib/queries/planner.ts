@@ -4,6 +4,7 @@ export { groupTopicsByMonth } from "@/lib/topic-grouping";
 
 export interface TopicRow {
   id: string;
+  subjectId: string;
   subject: string;
   title: string;
   month: number;
@@ -16,15 +17,34 @@ export interface TopicWithProgress extends TopicRow {
   completedAt: string | null;
 }
 
+// subject is a display-name join against `subjects`, not an embedded
+// select — same "fetch separately, join in JS" convention getAllUserNotes
+// already uses for topic titles, kept low-risk against the hand-maintained
+// database types (see lib/database.types.ts header).
 export async function getAllTopics(): Promise<TopicRow[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("topics")
-    .select("id, subject, title, month, week_number, order_index")
-    .order("order_index");
+  const [{ data, error }, { data: subjects, error: subjectsError }] = await Promise.all([
+    supabase
+      .from("topics")
+      .select("id, subject_id, title, month, week_number, order_index")
+      .order("order_index"),
+    supabase.from("subjects").select("id, name"),
+  ]);
 
   if (error) throw error;
-  return data ?? [];
+  if (subjectsError) throw subjectsError;
+
+  const subjectNameMap = new Map((subjects ?? []).map((s) => [s.id, s.name]));
+
+  return (data ?? []).map((topic) => ({
+    id: topic.id,
+    subjectId: topic.subject_id,
+    subject: subjectNameMap.get(topic.subject_id) ?? "",
+    title: topic.title,
+    month: topic.month,
+    week_number: topic.week_number,
+    order_index: topic.order_index,
+  }));
 }
 
 export async function getUserProgressMap(
@@ -77,13 +97,16 @@ export async function getEffectiveTopics(userId: string): Promise<TopicRow[]> {
 
   const supabase = await createClient();
   const topicIds = schedule.map((entry) => entry.topicId);
-  const { data, error } = await supabase
-    .from("topics")
-    .select("id, subject, title")
-    .in("id", topicIds);
+  const [{ data, error }, { data: subjects, error: subjectsError }] = await Promise.all([
+    supabase.from("topics").select("id, subject_id, title").in("id", topicIds),
+    supabase.from("subjects").select("id, name"),
+  ]);
 
   if (error) throw error;
+  if (subjectsError) throw subjectsError;
+
   const topicMap = new Map((data ?? []).map((topic) => [topic.id, topic]));
+  const subjectNameMap = new Map((subjects ?? []).map((s) => [s.id, s.name]));
 
   return schedule
     .map((entry): TopicRow | null => {
@@ -91,7 +114,8 @@ export async function getEffectiveTopics(userId: string): Promise<TopicRow[]> {
       if (!topic) return null;
       return {
         id: topic.id,
-        subject: topic.subject,
+        subjectId: topic.subject_id,
+        subject: subjectNameMap.get(topic.subject_id) ?? "",
         title: topic.title,
         month: entry.month,
         week_number: entry.weekNumber,

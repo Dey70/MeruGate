@@ -25,6 +25,7 @@ export async function applyScheduleAction(schedule: PreviewScheduleEntry[]) {
   if (error) throw error;
 
   revalidatePath("/planner");
+  revalidatePath("/subjects");
   revalidatePath("/dashboard");
   revalidatePath("/squad");
   redirect("/planner");
@@ -42,6 +43,7 @@ export async function resetToDefaultAction() {
   if (error) throw error;
 
   revalidatePath("/planner");
+  revalidatePath("/subjects");
   revalidatePath("/dashboard");
   revalidatePath("/squad");
   redirect("/planner");

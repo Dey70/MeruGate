@@ -10,9 +10,11 @@ import {
 } from "@/lib/queries/planner";
 import { computeStreaks } from "@/lib/streaks";
 import { progressPercent } from "@/lib/progress";
+import { getSubjectsWithProgress } from "@/lib/queries/subjects";
 import { GlassCard } from "@/components/glass/glass-card";
 import { StreakBadge } from "@/components/shared/streak-badge";
 import { TopicChecklistItem } from "@/components/planner/topic-checklist-item";
+import { SubjectProgressPanel } from "@/components/subjects/subject-progress-panel";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { resetToDefaultAction } from "@/app/(app)/planner/customize/actions";
@@ -25,10 +27,11 @@ export default async function PlannerPage() {
 
   if (!user) return null;
 
-  const [topics, activityDates, schedule] = await Promise.all([
+  const [topics, activityDates, schedule, subjectProgress] = await Promise.all([
     getTopicsWithProgress(user.id),
     getUserActivityDates(user.id),
     getUserSchedule(user.id),
+    getSubjectsWithProgress(user.id),
   ]);
 
   const hasCustomPlan = schedule.length > 0;
@@ -85,6 +88,16 @@ export default async function PlannerPage() {
           <span className="text-muted-foreground">{overallProgress}%</span>
         </div>
         <Progress value={overallProgress} className="mt-3" />
+      </GlassCard>
+
+      <GlassCard>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-semibold">Subject progress</h2>
+          <Link href="/subjects" className="text-sm text-muted-foreground hover:text-foreground">
+            View all subjects
+          </Link>
+        </div>
+        <SubjectProgressPanel subjects={subjectProgress} sortBy="weakest" />
       </GlassCard>
 
       <div className="flex flex-col gap-4">

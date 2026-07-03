@@ -42,12 +42,12 @@ export async function POST(request: NextRequest) {
   if (isFirstMessage && topicId) {
     const { data: topic } = await supabase
       .from("topics")
-      .select("title, subject")
+      .select("title, subjects(name)")
       .eq("id", topicId)
       .maybeSingle();
 
     if (topic) {
-      contentForModel = `[Context: I'm currently studying "${topic.title}" (${topic.subject}).]\n\n${message}`;
+      contentForModel = `[Context: I'm currently studying "${topic.title}" (${topic.subjects?.name}).]\n\n${message}`;
     }
   }
 

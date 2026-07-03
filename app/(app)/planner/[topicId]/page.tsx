@@ -26,7 +26,7 @@ export default async function TopicDetailPage({
   const [{ data: topic, error: topicError }, { data: progress }, note] = await Promise.all([
     supabase
       .from("topics")
-      .select("id, subject, title, month, week_number")
+      .select("id, title, month, week_number, subjects(name)")
       .eq("id", topicId)
       .single(),
     supabase
@@ -52,7 +52,7 @@ export default async function TopicDetailPage({
 
       <GlassCard strong>
         <p className="text-xs font-semibold tracking-wide text-brand uppercase">
-          {topic.subject} · Month {topic.month}, Week {topic.week_number}
+          {topic.subjects?.name} · Month {topic.month}, Week {topic.week_number}
         </p>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-4">
           <h1 className="text-2xl font-bold tracking-tight">{topic.title}</h1>
@@ -73,7 +73,7 @@ export default async function TopicDetailPage({
         <NoteEditor
           topicId={topic.id}
           initialContentMd={note?.contentMd ?? ""}
-          initialNotionLink={note?.notionLink ?? null}
+          initialResources={note?.resources ?? []}
         />
       </GlassCard>
     </div>

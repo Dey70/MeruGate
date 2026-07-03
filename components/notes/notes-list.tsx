@@ -65,10 +65,10 @@ export function NotesList({ notes }: { notes: NoteWithTopic[] }) {
                 ) : (
                   <p className="mt-2 text-sm text-muted-foreground italic">No content yet.</p>
                 )}
-                {note.notionLink ? (
+                {note.resources.length > 0 ? (
                   <span className="mt-3 inline-flex items-center gap-1 text-xs text-muted-foreground">
                     <ExternalLink className="size-3" />
-                    Notion link attached
+                    {note.resources.length} resource{note.resources.length === 1 ? "" : "s"} attached
                   </span>
                 ) : null}
               </GlassCard>
