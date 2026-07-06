@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
@@ -34,6 +35,13 @@ export default function RootLayout({
           {children}
           <Toaster position="top-center" />
         </TooltipProvider>
+        <Script
+          src="https://webnew-red.vercel.app/cdn/webnew.js"
+          data-base-url="https://webnew-red.vercel.app"
+          data-api-key="wn_live_n8mNmX6SLkDszIDUdSsCK6Yslazhq2Fm"
+          data-default-lang=""
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
